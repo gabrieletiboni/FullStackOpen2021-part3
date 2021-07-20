@@ -16,7 +16,8 @@ app.use(morgan(
 	))
 
 app.use(express.json())
-app.use(cors()) // Allow cross-origin resource sharing
+// app.use(cors()) // Allow cross-origin resource sharing
+app.use(express.static('build'))
 
 let phonebook = [
     { 
