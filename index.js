@@ -1,7 +1,7 @@
 require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
-const cors = require('cors')
+// const cors = require('cors')
 const Person = require('./models/person')
 
 // Now we can use object 'app' to do all sort of backend things thanks to express module (CommonJS module)
@@ -13,8 +13,9 @@ morgan.token('person', (request) => {
 	} else return null
 })
 app.use(morgan(
-		':method :url :status :res[content-length] :response-time ms :person'
-	))
+	':method :url :status :res[content-length] :response-time ms :person'
+))
+
 app.use(express.json())
 // app.use(cors()) // Allow cross-origin resource sharing
 app.use(express.static('build'))
@@ -34,27 +35,28 @@ app.get('/api/persons', (request, response) => {
 
 app.get('/api/persons/:id', (request, response, next) => {
 
-	Person.findById(request.params.id).then(person => {
-		if (person)
-			response.json(person)
-		else
-			response.status(404).send({'error': 'ID not found'})
-	})
-	.catch(error => next(error))
+	Person.findById(request.params.id)
+		.then(person => {
+			if (person)
+				response.json(person)
+			else
+				response.status(404).send({'error': 'ID not found'})
+		})
+		.catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
 
 	Person.findByIdAndRemove(request.params.id)
-	    .then(result => {
-	      response.status(204).end()
-	    })
-	    .catch(error => next(error))
+		.then(() => {
+			response.status(204).end()
+		})
+		.catch(error => next(error))
 })
 
-const generateId = () => {
+/* const generateId = () => {
 	return Math.floor(Math.random() * 3000)
-}
+} */
 
 app.post('/api/persons', (request, response, next) => {
 
@@ -80,43 +82,45 @@ app.post('/api/persons', (request, response, next) => {
 		number: body.number
 	})
 
-	new_person.save().then(person => {
-		response.json(person)
-	})
-	.catch(error => next(error))
+	new_person.save()
+		.then(person => {
+			response.json(person)
+		})
+		.catch(error => next(error))
 	
 })
 
 
 app.get('/info', (request, response, next) => {
-	Person.find({}).then(persons => {
-		const n_people = persons.length
+	Person.find({})
+		.then(persons => {
+			const n_people = persons.length
 
-		let text = 'phonebook has info for ' + String(n_people) + ' people'
-		const date = new Date();
-		text += '<br/><br/>' + date.toString()
+			let text = 'phonebook has info for ' + String(n_people) + ' people'
+			const date = new Date()
+			text += '<br/><br/>' + date.toString()
 
-		console.log(text)
+			console.log(text)
 
-		response.send(text)
+			response.send(text)
 
-	})
-	.catch(error => next(error))
+		})
+		.catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
-  const body = request.body
+	const body = request.body
 
-  const person = {
-    name: body.name,
-    number: body.number,
-  }
+	const person = {
+		name: body.name,
+		number: body.number,
+	}
 
-  Person.findByIdAndUpdate(request.params.id, person, { context: 'query', runValidators: true, new: true  })
-    .then(updatedPerson => {
-      response.json(updatedPerson)
-    })
-    .catch(error => next(error))
+	Person.findByIdAndUpdate(request.params.id, person, { context: 'query', runValidators: true, new: true  })
+		.then(updatedPerson => {
+			response.json(updatedPerson)
+		})
+		.catch(error => next(error))
 })
 
 
@@ -128,15 +132,15 @@ const unknownEndpoint = (request, response) => {
 app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
-  console.error(error.message)
+	console.error(error.message)
 
 	if (error.name === 'CastError') {
 		
 		return response.status(400).send({ error: 'malformatted id' })
 
 	} else if (error.name === 'ValidationError') {
-    	
-    	return response.status(400).json({ error: error.message })
+
+		return response.status(400).json({ error: error.message })
 	
 	} else {
 		response.status(400).send({error: 'Unknown error'})
@@ -153,5 +157,5 @@ app.use(errorHandler)
 // const PORT = process.env.PORT || 3001
 const PORT = process.env.PORT
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+	console.log(`Server running on port ${PORT}`)
 })
